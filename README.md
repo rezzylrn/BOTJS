@@ -1,28 +1,14 @@
-# Discord Store Bot with Pterodactyl Management
 
-Bot Discord yang dirancang khusus untuk kebutuhan store dengan integrasi Pterodactyl dan fitur moderasi lengkap.
+## Fitur Utama 
 
-## Fitur Utama
-
-### 🎮 Pterodactyl Management
+### 🎮 Hosting Control
 - **Ptero Installer**: Script instalasi otomatis Pterodactyl.
-- **Create Panel**: Informasi pembuatan panel.
-- **User Management**: Tambah dan hapus user Pterodactyl via Discord.
-- **Server Management**: Tambah dan hapus server Pterodactyl via Discord.
-
-### 🛡️ Moderasi & Utility (Berbasis Command)
-Gunakan perintah `/mod [subcommand]` untuk mengakses fitur berikut:
-- `announcement`: Kirim pengumuman ke channel tertentu.
-- `clearchat`: Menghapus pesan dalam jumlah banyak (1-100).
-- `kick`, `ban`, `mute`: Fitur moderasi untuk member.
-- `addrole`: Memberikan role kepada member.
-- `createchannel`, `createcategory`: Membuat channel atau kategori baru.
-- `feedback`, `rating`: Fitur interaksi pelanggan.
+- **Ptero Controller**:Control and create server(samp and botjs).
 
 ### 🔒 Keamanan
 - **Anti-Link**: Menghapus link otomatis (kecuali admin).
 - **Anti-Toxic**: Menghapus kata-kata kasar otomatis.
-
+- **Track-Audit**: Menampilkan aktivitas semua member yang ada.
 ## Cara Instalasi
 
 1. Clone atau download folder ini.
@@ -37,8 +23,8 @@ Gunakan perintah `/mod [subcommand]` untuk mengakses fitur berikut:
 5. Jalankan bot dengan perintah `node index.js`.
 
 ## Perintah Slash
-- `/ptero`: Membuka menu manajemen Pterodactyl (berbasis Button).
-- `/mod`: Kumpulan perintah moderasi dan utilitas (berbasis Command).
+- `/allmenu`: menampilkan semua command dan guide pemakaian bot.
+- `/modatormenu`: Kumpulan perintah moderator/admin (berbasis Command).
 
 ## Catatan
 Pastikan bot memiliki izin (Permissions) yang cukup di server Discord Anda, seperti `Manage Messages`, `Manage Channels`, `Manage Roles`, `Kick Members`, dan `Ban Members`.
