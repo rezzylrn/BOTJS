@@ -1,3 +1,6 @@
+//bot ini di buat menggunakan bantuan AI, dan di kembangkan oleh Gracious, jangan sekali2 di perjual belikan, FREE FOR ALL!!
+
+    
 const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord.js');
 require('dotenv').config();
 const fs = require('fs');
@@ -46,11 +49,18 @@ if (fs.existsSync(eventsPath)) {
     const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
     for (const file of eventFiles) {
         const filePath = path.join(eventsPath, file);
-        const event = require(filePath);
-        if (event.once) {
-            client.once(event.name, (...args) => event.execute(...args));
-        } else {
-            client.on(event.name, (...args) => event.execute(...args));
+        const eventModule = require(filePath);
+        
+        // Handle both single event objects and arrays of event objects
+        const events = Array.isArray(eventModule) ? eventModule : [eventModule];
+        
+        for (const event of events) {
+            if (!event.name) continue;
+            if (event.once) {
+                client.once(event.name, (...args) => event.execute(...args));
+            } else {
+                client.on(event.name, (...args) => event.execute(...args));
+            }
         }
     }
 }

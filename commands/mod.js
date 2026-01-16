@@ -2,7 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, ChannelType } = 
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("moderator")
+        .setName("mod")
         .setDescription("Kumpulan perintah moderasi dan utilitas")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator) // Default permission
         .addSubcommand(sub =>
@@ -11,7 +11,7 @@ module.exports = {
                 .addChannelOption(opt => opt.setName("channel").setDescription("Channel tujuan").setRequired(true).addChannelTypes(ChannelType.GuildText))
                 .addStringOption(opt => opt.setName("pesan").setDescription("Isi pengumuman").setRequired(true)))
         .addSubcommand(sub =>
-            sub.setName("cc")
+            sub.setName("clearchat")
                 .setDescription("Hapus pesan dalam jumlah banyak")
                 .addIntegerOption(opt => opt.setName("jumlah").setDescription("Jumlah pesan (1-100)").setRequired(true).setMinValue(1).setMaxValue(100)))
         .addSubcommand(sub =>
@@ -44,13 +44,44 @@ module.exports = {
                 .setDescription("Buat kategori baru")
                 .addStringOption(opt => opt.setName("nama").setDescription("Nama kategori").setRequired(true)))
         .addSubcommand(sub =>
+            sub.setName("feedback")
+                .setDescription("Kirim feedback untuk store")
+                .addStringOption(opt => opt.setName("isi").setDescription("Isi feedback Anda").setRequired(true)))
+        .addSubcommand(sub =>
             sub.setName("rating")
                 .setDescription("Berikan rating untuk store")
                 .addIntegerOption(opt => opt.setName("bintang").setDescription("Jumlah bintang (1-5)").setRequired(true).setMinValue(1).setMaxValue(5))
-                .addStringOption(opt => opt.setName("ulasan").setDescription("Ulasan Anda"))),
+                .addStringOption(opt => opt.setName("ulasan").setDescription("Ulasan Anda")))
+        .addSubcommand(sub =>
+            sub.setName("toxic")
+                .setDescription("Kelola daftar kata toxic")
+                .addStringOption(opt => 
+                    opt.setName("aksi")
+                        .setDescription("Pilih aksi")
+                        .setRequired(true)
+                        .addChoices(
+                            { name: "Tambah", value: "add" },
+                            { name: "Hapus", value: "remove" },
+                            { name: "Daftar", value: "list" }
+                        ))
+                .addStringOption(opt => opt.setName("kata").setDescription("Kata yang ingin ditambah/dihapus"))),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
+
+        // Feedback and Rating are public
+        if (subcommand === 'feedback') {
+            const isi = interaction.options.getString('isi');
+            const embed = new EmbedBuilder()
+                .setTitle('📩 Feedback Baru')
+                .setDescription(isi)
+                .setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
+                .setColor('#ffff00')
+                .setTimestamp();
+            // You might want to send this to a specific log channel
+            await interaction.channel.send({ embeds: [embed] });
+            return interaction.reply({ content: 'Terima kasih atas feedback Anda!', ephemeral: true });
+        }
 
         if (subcommand === 'rating') {
             const bintang = interaction.options.getInteger('bintang');
@@ -75,9 +106,35 @@ module.exports = {
             return interaction.reply({ content: 'Anda tidak memiliki izin untuk menggunakan perintah ini!', ephemeral: true });
         }
 
+        const fs = require('fs');
+        const path = require('path');
+        const toxicPath = path.join(__dirname, '../data/toxicWords.json');
+
         switch (subcommand) {
-            case 'moderatormenu': {
-                await interaction.reply({ content: `test ombak barudak!!` });
+            case 'toxic': {
+                const aksi = interaction.options.getString('aksi');
+                const kata = interaction.options.getString('kata')?.toLowerCase();
+                let toxicWords = JSON.parse(fs.readFileSync(toxicPath, 'utf8'));
+
+                if (aksi === 'add') {
+                    if (!kata) return interaction.reply({ content: 'Masukkan kata yang ingin ditambah!', ephemeral: true });
+                    if (toxicWords.includes(kata)) return interaction.reply({ content: 'Kata tersebut sudah ada di daftar.', ephemeral: true });
+                    toxicWords.push(kata);
+                    fs.writeFileSync(toxicPath, JSON.stringify(toxicWords, null, 2));
+                    await interaction.reply({ content: `✅ Berhasil menambahkan **${kata}** ke daftar toxic.` });
+                } else if (aksi === 'remove') {
+                    if (!kata) return interaction.reply({ content: 'Masukkan kata yang ingin dihapus!', ephemeral: true });
+                    if (!toxicWords.includes(kata)) return interaction.reply({ content: 'Kata tersebut tidak ditemukan di daftar.', ephemeral: true });
+                    toxicWords = toxicWords.filter(w => w !== kata);
+                    fs.writeFileSync(toxicPath, JSON.stringify(toxicWords, null, 2));
+                    await interaction.reply({ content: `✅ Berhasil menghapus **${kata}** dari daftar toxic.` });
+                } else if (aksi === 'list') {
+                    const embed = new EmbedBuilder()
+                        .setTitle('🚫 Daftar Kata Toxic')
+                        .setDescription(toxicWords.length > 0 ? toxicWords.join(', ') : 'Daftar kosong.')
+                        .setColor('#ff0000');
+                    await interaction.reply({ embeds: [embed] });
+                }
                 break;
             }
             case 'announcement': {
